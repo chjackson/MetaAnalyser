@@ -4,7 +4,7 @@
 #'
 #' @param dat Meta-analysis data. This should be a data frame with three columns, called "name", "est" and "se" giving the study name, study-specific parameter estimates and corresponding standard errors respectively.  If omitted, the app is launched with the default \code{\link{magnesium}} data.
 #'
-#' @param rstudio The default of FALSE opens the app in the system default web browser.
+#' @param rstudio The default of FALSE opens the app in the system default web browser.  If running RStudio and \code{rstudio=TRUE}, the app is opened in the RStudio built-in viewer.
 #'
 #' @return None
 #'
@@ -27,8 +27,7 @@ MetaAnalyser <- function(dat, rstudio=FALSE){
     }
     on.exit(.dat_env$userdata <- .dat_env$userdataname <- NULL, add = TRUE)
 
-    launch.browser <- if (!rstudio)
-                          TRUE else getOption("shiny.launch.browser", interactive())
+    launch.browser <- if (!rstudio) TRUE else rstudio::viewer
     ## R code for shiny app is in inst/MetaAnalyser in source package,
     ## or in MetaAnalyser in binary package
     shiny::runApp(system.file("MetaAnalyser", package = "MetaAnalyser"),
