@@ -1,7 +1,7 @@
 ### Main Shiny server function
 
 shinyServer(function(input, output, session) {
-  
+
     values <- reactiveValues(selected=TRUE,  ## Current data subset selection
                              anglemax=0)
 
@@ -9,7 +9,7 @@ shinyServer(function(input, output, session) {
     observe({
         input$select
     })
-    
+
     ## Button handler: set random effects SE to zero
     observe({
         if (input$zeroresd > 0 || input$egger){
@@ -17,100 +17,52 @@ shinyServer(function(input, output, session) {
         }
     })
 
-    ## Button handler: reset random effects SE to data value  
+    ## Button handler: reset random effects SE to data value
     observe({
-        if (input$resetresd > 0) { 
+        if (input$resetresd > 0) {
             dat <- getdata_static()
             updateNumericInput(session, "resd", value=resd_default(dat))
         }
     })
 
-    ## Compute random effects SD from data using DerSimonian & Laird formula
-    resd_default <- function(dat){
-        with(dat, {
-            wtfe <- 1 / se^2
-            a.fixef <- sum(wtfe*est/sum(wtfe))
-            a.fixefse <- 1/sqrt(sum(wtfe))
-            chisq <- sum(wtfe*(est - a.fixef)^2)
-            k <- length(est)
-            tausq <- max(0, (chisq - (k - 1)) / (sum(wtfe) - sum(wtfe^2) / sum(wtfe)))
-            sqrt(tausq)
-        } )
-    }
-
-    ## Compute meta-analysis weights and pooled estimates given data and random effects SD   
-    metasumm <- function(est, se, resd, egger=FALSE){
-        wtfe <- 1 / se^2
-        poolfix <- sum(wtfe * est / sum(wtfe))
-        tausq <- resd^2
-        wtre <- 1 / (se^2 + tausq)
-        if (egger) {
-            egg <- eggersumm(est, se)
-            est <- egg$ystar
-            pool <- egg$pool
-            poolse <- egg$poolse
-            poolci <- egg$poolci
-        } else {
-            pool <- sum(wtre * est / sum(wtre))
-            poolse <- 1/sqrt(sum(wtre))
-            poolci <- pool + qnorm(c(0.025, 0.975))*poolse
-        }
-        ret <- list(est=est, pool=pool, poolse=poolse, poolci=poolci,
-                    pwtfe=wtfe/sum(wtfe), pwtre=wtre/sum(wtre))
-        ret$Q <- sum(wtfe*(est - poolfix)^2)
-        df <- length(est) - 1
-        ret$Isq <- max(0, (ret$Q - df)/ret$Q)
-        ret
-    }
-    
-    ## Egger regression
-    eggersumm <- function(est, se){
-        z1 <- est/se
-        z2 <- 1/se
-        egger.lm <- summary(lm(z1 ~ z2))$coef
-        alpha <- egger.lm["(Intercept)","Estimate"]
-        ystar <- est - alpha*se
-        df <- length(est) - 2
-        t <- abs(qt(0.025, df))
-        pool <- egger.lm["z2","Estimate"]
-        poolse <- egger.lm["z2","Std. Error"]
-        poolci <- pool + c(-t, t)*poolse
-        list(ystar=ystar, pool=pool, poolse=poolse, poolci=poolci)
-    }
-
     ## Return the full dataset currently chosen
     getdata_base <- reactive({
-        globals$newdata <<- NULL # note global assignment <<- 
-        dat <- switch(input$select,
-                      "1"=data.magnesium,
-                      "2"=data.catheter,
-                      "3"=data.aspirin,
-                      "4"=data.symmetric,
-                      "5"={ ## user-uploaded dataset
-                          output$filechoiceui <- renderUI({ list(
-                              checkboxInput('header', 'Header', TRUE),
-                              radioButtons('sep', 'Separator',
-                                           c(Comma=',', Semicolon=';', Tab='\t'),
-                                           selected=',', inline=TRUE
-                                           ),
-                              radioButtons('quote', 'Quote',
-                                           c(None='', 'Double Quote'='"', 'Single Quote'="'"),
-                                           selected='"', inline=TRUE)
-                          ) })
-                          inFile <- input$data
-                          validate( need(inFile != "", "Please select a dataset") ) ## needed to avoid function returning before data chosen
-                          if (is.null(inFile)) userdata <- NULL 
-                          else userdata <- read.csv(inFile$datapath, header = input$header,
-                                                sep = input$sep, quote = input$quote)
-                          ## Silence if error occurs - but maybe that's OK - can switch to another data set.
-                          validate(need(ncol(userdata)>=3, "Need at least 3 columns in the data"))
-                          names(userdata)[1:3] <- c("name","est","se")
-                          validate(need(is.numeric(userdata$est), "Second column (estimate) should be numeric"))
-                          validate(need(is.numeric(userdata$se), "Second column (SE) should be numeric"))
-                          userdata
-                      })
+        globals$newdata <<- NULL # note global assignment <<-
+        dat <- get("userdata", envir = MetaAnalyser:::.dat_env)
+        ## TODO validate input data.
+        if (is.null(dat)){
+            dat <- switch(input$select,
+                          "1"=magnesium,
+                          "2"=catheter,
+                          "3"=aspirin,
+                          "4"=symmetric,
+                          "5"={ ## user-uploaded dataset
+                output$filechoiceui <- renderUI({ list(
+                                                      checkboxInput('header', 'Header', TRUE),
+                                                      radioButtons('sep', 'Separator',
+                                                                   c(Comma=',', Semicolon=';', Tab='\t'),
+                                                                   selected=',', inline=TRUE
+                                                                   ),
+                                                      radioButtons('quote', 'Quote',
+                                                                   c(None='', 'Double Quote'='"', 'Single Quote'="'"),
+                                                                   selected='"', inline=TRUE)
+                                                  ) })
+                inFile <- input$data
+                validate( need(inFile != "", "Please select a dataset") ) ## needed to avoid function returning before data chosen
+                if (is.null(inFile)) userdata <- NULL
+                else userdata <- read.csv(inFile$datapath, header = input$header,
+                                          sep = input$sep, quote = input$quote)
+                ## Silence if error occurs - but maybe that's OK - can switch to another data set.
+                validate(need(ncol(userdata)>=3, "Need at least 3 columns in the data"))
+                names(userdata)[1:3] <- c("name","est","se")
+                validate(need(is.numeric(userdata$est), "Second column (estimate) should be numeric"))
+                validate(need(is.numeric(userdata$se), "Second column (SE) should be numeric"))
+                userdata
+            })
+        }
+        dat
     })
-    
+
     ## Add user-added studies to base data, append meta-analysis summary statistics
     getdata_static <- reactive({
         dat <- getdata_base()
@@ -118,11 +70,12 @@ shinyServer(function(input, output, session) {
             if (input$submitnewdata == 0) return(NULL)
             isolate({
                 res <- data.frame(name=input$newname, est=input$newest, se=input$newse)
-                if (is.na(res$est) || is.na(res$se)) res <- NULL
+                if (is.null(input$newest) || is.null(input$newse) ||
+                    is.na(res$est) || is.na(res$se)) res <- NULL
                 res
             })
         })
-        globals$newdata <<- rbind(globals$newdata, get_newstudy())  # note global assignment <<- 
+        globals$newdata <<- rbind(globals$newdata, get_newstudy())  # note global assignment <<-
         if (!is.null(globals$newdata)){
             dat <- rbind(dat, globals$newdata)
             updateNumericInput(session, "newname", value="")
@@ -135,29 +88,34 @@ shinyServer(function(input, output, session) {
         dat$pwtfe <- dat$wtfe / sum(1/dat$se^2)
         resd <- if (input$egger) 0 else resd_default(dat)
         updateNumericInput(session, "resd", value=resd)
-        sm <- metasumm(dat$est, dat$se, resd, input$egger)
+        sm <- metasumm(dat, resd, input$egger)
         dat$est <- sm$est
         dat$pwtre <- sm$pwtre
         attr(dat, "pool") <- sm$pool
         globals$pool <<- sm$pool
         attr(dat, "poolse") <- sm$poolse
         attr(dat, "poolci") <- sm$poolci
+
         values$selected <- rep(TRUE, n)
+#        proxy = dataTableProxy('datatables')
+#        selectRows(proxy, numeric()) # this doesn't work at resetting selection when changing data
+
         attr(dat, "plotkeys") <- rep(c("points","strings","topbar","baseline_vertical","baseline_horiz","current_vertical","current_horiz","pivot","baseline_point","current_point"),
                                      c(n, n, 2, 2, 2, 2, 2, 3, 1, 1))
         dat
     })
-    
+
     ## Update the study-selection indicator in the data after clicking,
     ## and recompute meta-analysis summary statistics
     ## TODO nicer dplyr like syntax for defining data
-    
+
     getdata_dynamic <- reactive({
         dat <- getdata_static()
         n <- nrow(dat)
+
         dat$selected <- factor(rep("No", n), levels=c("Yes","No")) # ggvis prefers grouping variable to be factor
         dat$selected[values$selected] <- "Yes"
-        summ <- metasumm(dat[values$selected,"est"], dat[values$selected,"se"], input$resd, input$egger)
+        summ <- metasumm(dat[values$selected,,drop=FALSE], input$resd, input$egger)
         dat$est[values$selected] <- summ$est
         dat$wtfe <- 1/(dat$se^2)
         dat$wtre <- 1/(dat$se^2 + input$resd^2)
@@ -168,7 +126,7 @@ shinyServer(function(input, output, session) {
 
         dat$yfe <- switch(input$ytype, perc=dat$percwtfe, var=dat$wtfe)
         dat$yre <- switch(input$ytype, perc=dat$percwtre, var=dat$wtre)
-        
+
         aspect_ratio <- default_options()$width / default_options()$height
         if (is.null(input$yrange)) {top <- 100; bottom <- 0}
         else {
@@ -178,10 +136,10 @@ shinyServer(function(input, output, session) {
         bottomdyn <- bottom # + 0.01*(top-bottom)
 
         xex <- 0.1
-        dxr <- diff(range(dat$est))        
+        dxr <- diff(range(dat$est))
         xrange <- range(dat$est) + c(-1, 1)*xex*dxr
         yrange <- c(0, top)
-        ## TODO choose default point size more intelligently 
+        ## TODO choose default point size more intelligently
         sqsize <- dxr / 100 * input$pointsize
         dat$dx <- sqsize*sqrt(dat$wtfe)
         dat$dy <- dat$dx/diff(xrange)*diff(yrange)*aspect_ratio
@@ -192,12 +150,12 @@ shinyServer(function(input, output, session) {
         pool.dyn <- summ$pool
         is_biased <- if (!isTRUE(all.equal(input$resd, resd_default(dat))) ||
                          !all(values$selected)) "Yes" else "No"
-        
+
         ### Tilt the top bar proportional to bias, up to certain maximum angle
         bias <- (globals$pool - pool.dyn) / (dxr/2)
         degrees_tilt <- sign(bias * values$anglemax) * min(values$anglemax, abs(bias * values$anglemax))
         globals$pool <<- pool.dyn
-        angle <- degrees_tilt * pi/180 
+        angle <- degrees_tilt * pi/180
         hl <- pool.dyn - min(dat$est)
         hr <- max(dat$est) - pool.dyn
         xltilt <- pool.dyn - hl*cos(angle)
@@ -208,18 +166,18 @@ shinyServer(function(input, output, session) {
         dat$stringtop <- top + (dat$est - pool.dyn)*sin(angle)*yr/xr
         dat$estplot <- dat$est + (pool.dyn - dat$est)*(1 - cos(angle)) # plotted x position, different from actual estimate if bar is tilted
         vtop <- top + (pool.static - pool.dyn)*sin(angle)*yr/xr
-        
+
         pivot.dx <- dxr / 25
         pivot.dy <- 0.04*top
         pivot.top <- 0.99*top
-       
+
         ## Append plot coordinates to pass to ggvis, based on selected data
 
         auxdata <- list(
             ## List of data frames to make into reactive data sources
             topbar = data.frame(x = c(xltilt, xrtilt), y = c(ybtilt, yttilt), key=2*n+1:2),
             baseline_vertical = data.frame(x = rep(pool.static, 2), y = c(bottom, vtop-pivot.dy), key=2*n+3:4, is_biased=is_biased),
-            baseline_horiz = data.frame(x = attr(dat, "poolci"), 
+            baseline_horiz = data.frame(x = attr(dat, "poolci"),
                                   y = rep(bottom, 2), key=2*n+5:6, is_biased=is_biased),
             current_vertical = data.frame(x = rep(pool.dyn, 2), y = c(bottomdyn, top-pivot.dy), key=2*n+7:8),
             current_horiz= data.frame(x = summ$poolci,
@@ -233,13 +191,13 @@ shinyServer(function(input, output, session) {
         )
         for (i in seq(along=auxdata))
             auxdata[[i]]$show_scales <- if (input$show_scales) "Yes" else "No"
-        
+
         attr(dat, "summ") <- summ
         attr(dat, "aux") <- c(list(xrange=xrange), auxdata)
 
         dat
     })
-    
+
     ## Reactive data sources to enable animation in ggvis
     getdata_string <- function(i){
         reactive({
@@ -256,13 +214,13 @@ shinyServer(function(input, output, session) {
     getdata_allstrings <- reactive({
         dat <- getdata_dynamic()
         res <- data.frame(x=rep(dat$estplot, each=2),
-                   y=as.numeric(rbind(dat$stringtop, dat$yre+dat$dx)), 
+                   y=as.numeric(rbind(dat$stringtop, dat$yre+dat$dx)),
                    selected=rep(dat$selected, each=2),
                    key=nrow(dat) + 1:(2*nrow(dat)), # TODO rejig keys
                    group=rep(1:nrow(dat), each=2)) %>% group_by(group)
         res
     })
-    
+
     getdata_topbar <- reactive({
         dat <- getdata_dynamic()
         ret <- attr(dat, "aux")$topbar
@@ -274,17 +232,17 @@ shinyServer(function(input, output, session) {
         ret$show_scales <- if (input$show_scales) "Yes" else "No"
         if (!input$show_scales) ret$is_biased <- "Noscales"
         ret
-    })    
+    })
     getdata_baseline_horiz <- reactive({
         dat <- getdata_dynamic()
         ret <- attr(dat, "aux")$baseline_horiz
-        ret        
-    })    
+        ret
+    })
     getdata_current_vertical <- reactive({
         dat <- getdata_dynamic()
         ret <- attr(dat, "aux")$current_vertical
         ret
-    })    
+    })
     getdata_current_horiz <- reactive({
         dat <- getdata_dynamic()
         ret <- attr(dat, "aux")$current_horiz
@@ -322,7 +280,7 @@ shinyServer(function(input, output, session) {
         input$yrange
     })
     getdata_holescale <- reactive({
-        dat <- getdata_dynamic()        
+        dat <- getdata_dynamic()
         c(0, max(dat$yfe))
     })
 
@@ -344,34 +302,45 @@ shinyServer(function(input, output, session) {
                         min = ymin, max = ymax, value = c(ymin, ymax))
         })
     })
-    
-    ## Draw the data table, with excluded studies greyed out
+
+    ## Print the data table, with excluded studies greyed out, and other summary info
     observe({
         dat <- getdata_dynamic()
         sel <- (dat$selected=="Yes")
-        Isq <- attr(dat, "summ")$Isq
+        summ <- attr(dat, "summ")
+        Isq <- summ$Isq
+        digits <- 3 # let user choose?
         if (sum(sel) > 0) {
             dat <- dat[,c("name","est","se","wtre","wtfe","percwtre","percwtfe")]
             dat$name <- as.character(dat$name)
             for (i in c("est","se","wtre","wtfe","percwtre","percwtfe"))
-                dat[,i] <- formatC(dat[,i], digits=3, format="f")
+                dat[,i] <- formatC(dat[,i], digits=digits, format="f")
             names(dat) <- c("Name", "Estimate", "SE",
                             "Inverse variance", "Inverse variance (fixed effects)",
                             "Weight (%)", "Weight (%, fixed effects)")
-            output$datatables = renderUI({
-                css <- c("#bggray {background-color: #555555;}")
-                for (i in 1:ncol(dat))
-                    dat[!sel,i] <- paste(dat[!sel,i], "#bggray")
-                htmltab <- markdownToHTML(
-                    text=pandoc.table.return(
-                    dat, style="rmarkdown", split.tables=Inf
-                    ), 
-                    fragment.only=TRUE
-                ) 
-                colortable(htmltab, css)
-            })
+            ## Table responds to clicks on plot - but this requires
+            ## devel version of DT >=0.1.16 on github not CRAN.
+
+            ## Plot doesn't respond to clicks on table
+            ## below line breaks both things
+            ## todo MRE with mtcars
+
+            ## FIXME if exclude in one dataset, should reset selection when changing data
+            ## difficult to reproduce this
+            
+            ## isolate(values$selected <- !(1:nrow(dat) %in% input$datatables_rows_selected))
+
+            output$datatables =  DT::renderDataTable(dat, server = (nrow(dat)>100))
+            proxy = dataTableProxy('datatables')
+            selectRows(proxy, which(!sel))
+
             output$Isq = renderUI({
                 div(paste("I-squared =",round(100*Isq,1),"%"))
+            })
+            output$pooled <- renderUI({
+                div(paste("Pooled estimate = ", round(summ$pool, digits=digits), " (",
+                          round(summ$poolci[1], digits), ", ",
+                          round(summ$poolci[2], digits), ")", sep=""))
             })
         }
         output$invisible <- renderUI({
@@ -422,9 +391,9 @@ shinyServer(function(input, output, session) {
             updateCheckboxInput(session, "tilt", value=TRUE)
         }
     }
-    
+
     ## Draw the actual plot.
-    p <- ggvis(x=~estplot, y=~yre, key:=~key, data=getdata_dynamic) %>% 
+    p <- ggvis(x=~estplot, y=~yre, key:=~key, data=getdata_dynamic) %>%
       scale_numeric("x", domain = getdata_xdomain)  %>%
       scale_numeric("y", domain = getdata_ydomain)
 
@@ -436,7 +405,7 @@ shinyServer(function(input, output, session) {
     p <- p %>%
       ## add original estimate and CI in gray
       layer_paths(x = ~x, y = ~y, data=getdata_baseline_vertical, strokeWidth:=3, bias_stroke) %>%
-      layer_paths(x = ~x, y = ~y, data=getdata_baseline_horiz, show_scales_strokewidth, bias_stroke) %>% 
+      layer_paths(x = ~x, y = ~y, data=getdata_baseline_horiz, show_scales_strokewidth, bias_stroke) %>%
       ## current estimate in black
       layer_paths(x = ~x, y = ~y, data=getdata_current_vertical, strokeWidth:=3, show_scales_stroke) %>%
       layer_paths(x = ~x, y = ~y, data=getdata_current_horiz, show_scales_strokewidth) %>%
@@ -452,10 +421,10 @@ shinyServer(function(input, output, session) {
       scale_nominal("scale_biaspoolcolor", domain = c("Yes", "No", "Noscales"), range = c("lightgray", "black", "white"))
 
     ## Draw strings
-    ## Hard-code the maximum number of strings that can be drawn.  
+    ## Hard-code the maximum number of strings that can be drawn.
     ## unclear how else to let the upper limit of the loop react to a
     ## change in the number of rows in the base dataset, while retaining animations.
-    ## geom_segment would make this cleaner, but not implemented yet. 
+    ## geom_segment would make this cleaner, but not implemented yet.
     ## feed dplyr grouped data to layer_paths?   https://github.com/rstudio/ggvis/issues/375
     max_rows <- 50
     for (i in seq_len(max_rows)){
@@ -463,29 +432,29 @@ shinyServer(function(input, output, session) {
         p <- layer_paths(p, x = ~x, y = ~y, data=ai,
                          prop("stroke", ~ selected, scale="scale_stringcolor"), opacity := 0.5)
     }
-    
+
     ## if put key in layer_points but not string layer, then hover doesn't know key
-    ## if put key in both, then draws only one 
-    ## need key for hover and click 
+    ## if put key in both, then draws only one
+    ## need key for hover and click
 
 #    p <- layer_paths(p, x = ~x, y = ~y, key:=~key, data=getdata_allstrings, prop("stroke", ~ selected, scale="scale_stringcolor"), opacity := 0.5)
     a_props <- axis_props(title=list(fontSize=15), labels=list(fontSize=14))
 
     p <- p %>%
       add_tooltip(hover_fn) %>%
-      handle_click(click_fn) %>% 
+      handle_click(click_fn) %>%
       add_axis("x", title="Estimate", grid=FALSE, properties=a_props)  %>%
       add_axis("y", title="Study weight", grid=FALSE, properties=a_props) %>%
       ## Implement the plot symbol as four adjacent rectangles
       ## top rectangle
       layer_rects(x=~est-dx, y=~yre+dyre, x2=~est+dx, y2=~yre+dy, fill=~selected, strokeWidth:=0, opacity:=0.5) %>%
-      ## left rectangle 
+      ## left rectangle
       layer_rects(x=~est-dx, y=~yre-dyre, x2=~est-dxre, y2=~yre+dyre, fill=~selected, strokeWidth:=0, opacity:=0.5) %>%
       ## bottom rectangle
       layer_rects(x=~est-dx, y=~yre-dy, x2=~est+dx, y2=~yre-dyre, fill=~selected, strokeWidth:=0, opacity:=0.5) %>%
-      ## right rectangle 
+      ## right rectangle
       layer_rects(x=~est+dxre, y=~yre-dyre, x2=~est+dx, y2=~yre+dyre, fill=~selected, strokeWidth:=0, opacity:=0.5) %>%
-      ## and an invisible one in the middle that can be hovered / clicked 
+      ## and an invisible one in the middle that can be hovered / clicked
       layer_rects(x=~est-dxre, y=~yre-dyre, x2=~est+dxre, y2=~yre+dyre, strokeWidth:=0, opacity:=0) %>%
       hide_legend("size") %>%
       scale_nominal("fill", range = c("blue", "lightgray")) %>%
@@ -499,37 +468,12 @@ shinyServer(function(input, output, session) {
 
 })
 
-# function derived from the highlightHTMLcells() function of the highlightHTML package
-# Stéphane Laurent
-# http://stackoverflow.com/questions/22684162/r-shiny-color-dataframe
-# https://groups.google.com/forum/#!topic/shiny-discuss/PvlrXLEo0z8
+## TODO
 
-colortable <- function(htmltab, css, style="table-condensed table-bordered"){
-  tmp <- str_split(htmltab, "\n")[[1]] 
-  CSSid <- gsub("\\{.+", "", css)
-  CSSid <- gsub("^[\\s+]|\\s+$", "", CSSid)
-  CSSidPaste <- gsub("#", "", CSSid)
-  CSSid2 <- paste(" ", CSSid, sep = "")
-  ids <- paste0("<td id='", CSSidPaste, "'")
-  for (i in 1:length(CSSid)) {
-    locations <- grep(CSSid[i], tmp)
-    tmp[locations] <- gsub("<td", ids[i], tmp[locations])
-    tmp[locations] <- gsub(CSSid2[i], "", tmp[locations], 
-                           fixed = TRUE)
-  }
-  htmltab <- paste(tmp, collapse="\n")
-  Encoding(htmltab) <- "UTF-8"
-  list(
-    tags$style(type="text/css", paste(css, collapse="\n")),
-    tags$script(sprintf( 
-                  '$( "table" ).addClass( "table %s" );', style
-                )),
-    HTML(htmltab)
-  )
-}
+## Selection doesn't get reset when changing the base dataset
+## This bug was there before moving to datatables
 
-
-## TODO 
+## datatables: make selection color darker
 
 ## Egger reincludes all points
 
@@ -538,7 +482,7 @@ colortable <- function(htmltab, css, style="table-condensed table-bordered"){
 ## Posted to ggvis forum (but not github issue yet)
 ## could try to debug manually
 
-## button horiz alignment is a fudge and breaks on some screens 
+## button horiz alignment is a fudge and breaks on some screens
 
 ## Y axis title can't be changed dynamically
 ## https://github.com/rstudio/ggvis/issues/203

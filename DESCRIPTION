@@ -1,9 +1,13 @@
 Package: MetaAnalyser
 Type: Package
-Title: What the package does (short line)
-Version: 1.0
+Title: An Interactive Visualisation of Meta-Analysis as a Physical Weighing Machine	
+Version: 0.1
 Date: 2016-01-07
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Author: Jack Bowden <j.bowden@bristol.ac.uk> (conception), Christopher Jackson <chris.jackson@mrc-bsu.cam.ac.uk> (programming)
+Maintainer: Christopher Jackson <chris.jackson@mrc-bsu.cam.ac.uk>
+Description: An interactive application to visualise meta-analysis data as a physical weighing machine.  The interface is based on the Shiny web application framework, though can be run locally and with the user's own data.
+License: GPL (>= 2)
+Depends: R (>= 2.10), shiny
+Imports: ggvis,DT
+Suggests: rmeta
+LazyData: yes

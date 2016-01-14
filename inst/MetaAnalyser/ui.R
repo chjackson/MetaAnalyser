@@ -1,3 +1,11 @@
+userdataname <- get("userdataname", envir = MetaAnalyser:::.dat_env)
+
+datasets <- c("magnesium", "catheter", "aspirin", "symmetric")
+datasets.title <- c("Magnesium", "Catheter", "Aspirin", "Symmetric")
+owndata.idx <- length(datasets) + 1
+data.choices <- seq_len(owndata.idx)
+names(data.choices) <- c(datasets.title, "Upload your own...")
+data.default <- if (userdataname %in% datasets) match(userdataname, datasets) else 1
 
 shinyUI(fluidPage(
     includeCSS('style.css'),
@@ -9,10 +17,9 @@ shinyUI(fluidPage(
         div("Click on a point to exclude it from the analysis, and watch the scales rebalance."),
         div("Hover over the graph for more explanation."),
         selectInput("select", label = h4("Choose a dataset or upload your own"),
-                    choices = list("Magnesium" = 1, "Catheter" = 2, "Aspirin" = 3, "Symmetric" = 4, "Upload your own..." = 5),
-                    selected = 1),
+                    choices = data.choices, selected = data.default),
         conditionalPanel(
-            condition = "input.select == 5",
+            condition = sprintf("input.select == %s", owndata.idx),
             fileInput('data',
                       'Choose CSV file to upload. Needs exactly three columns giving study name, estimate and standard error in that order.',
                       accept = c(
@@ -29,7 +36,7 @@ shinyUI(fluidPage(
         htmlOutput("invisible"),
         div(class="row-fluid",
             ## fudge to align the reset buttons beside the input box
-            tags$style(type='text/css', "button#resetresd { margin-bottom: -52px; }"), 
+            tags$style(type='text/css', "button#resetresd { margin-bottom: -52px; }"),
             tags$style(type='text/css', "button#zeroresd { margin-bottom: -52px; }"),
             h4("Random effects standard deviation"),
             div(style="display:inline-block;",numericInput("resd","", value=0, step=0.01)),
@@ -45,17 +52,19 @@ shinyUI(fluidPage(
         radioButtons("ytype", h4("y-axis definition"),
                      c("Percentage weight" = "perc",
                        "Inverse variance (absolute weight)" = "var")),
-        
+
         htmlOutput("yslider"),
-#        sliderInput("yrange", label = h4("y-axis range"), min = 0, 
+#        sliderInput("yrange", label = h4("y-axis range"), min = 0,
 #                    max = 100, value = c(0, 100)),
-        
-        sliderInput("pointsize", label = h4("Point size adjustment"), min = 0, 
+
+        sliderInput("pointsize", label = h4("Point size adjustment"), min = 0,
                     max = 5, value = 1, step=0.1)
     ),
     mainPanel(
         ggvisOutput("ggvis"),
-        htmlOutput("datatables"),
+        htmlOutput("pooled"),
+        hr(),
+        DT::dataTableOutput("datatables"),
         h4("Add study to current data"),
         div(class="row-fluid",
             tags$style(type='text/css', "button#submitnewdata { margin-bottom: -62px; }"),
