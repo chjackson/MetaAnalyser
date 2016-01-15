@@ -7,7 +7,7 @@ owndata.idx <- length(datasets) + 1 + is.userdata
 data.choices <- seq_len(owndata.idx)
 names(data.choices) <- c(datasets.title, "Upload your own...",
                          if (is.userdata) userdataname else NULL)
-data.default <- if (userdataname %in% datasets) match(userdataname, datasets) else 1
+data.default <- if (!is.null(userdataname) && userdataname %in% datasets) match(userdataname, datasets) else 1
 if (is.userdata) data.default <- length(datasets) + 2
 
 ## Fixme add user data to choice list if supplied 
