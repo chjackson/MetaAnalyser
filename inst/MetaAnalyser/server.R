@@ -28,7 +28,9 @@ shinyServer(function(input, output, session) {
     ## Return the full dataset currently chosen
     getdata_base <- reactive({
         globals$newdata <<- NULL # note global assignment <<-
-        dat <- get("userdata", envir = MetaAnalyser:::.dat_env)
+        dat <- NULL
+        if (exists("userdata", envir = MetaAnalyser:::.dat_env))
+            dat <- get("userdata", envir = MetaAnalyser:::.dat_env)
         ## TODO validate input data.
         if (is.null(dat)){
             dat <- switch(input$select,

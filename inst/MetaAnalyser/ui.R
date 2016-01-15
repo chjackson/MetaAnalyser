@@ -1,6 +1,5 @@
-if (exists("userdataname", envir = MetaAnalyser:::.dat_env))
-    userdataname <- get("userdataname", envir = MetaAnalyser:::.dat_env)
-else userdataname <- NULL
+userdataname <- if (exists("userdataname", envir = MetaAnalyser:::.dat_env))
+                    get("userdataname", envir = MetaAnalyser:::.dat_env) else "magnesium"
 
 datasets <- c("magnesium", "catheter", "aspirin", "symmetric")
 datasets.title <- c("Magnesium", "Catheter", "Aspirin", "Symmetric")
