@@ -7,7 +7,9 @@
 resd_default(dat)
 }
 \arguments{
-\item{dat}{Meta-analysis data. This should be a data frame with three columns, called "name", "est" and "se" giving the study name, study-specific parameter estimates and corresponding standard errors respectively.  If omitted, the app is launched with the default \code{\link{magnesium}} data.}
+\item{dat}{Meta-analysis data. This should be a data frame with three columns, called "name", "est" and "se" giving the study name, study-specific parameter estimates and corresponding standard errors respectively.
+
+If omitted, the app is launched with the default \code{\link{magnesium}} data.   Numeric or character study names are permitted.  If the data frame has more than three columns, the first three are used.  If the first three columns are called "name", "est" and "se" in some order, they are re-ordered appropriately, otherwise they are re-named.}
 }
 \value{
 Estimated random effects standard deviation

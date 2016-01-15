@@ -2,14 +2,20 @@
 #'
 #' An interactive application to visualise meta-analysis data as a physical weighing machine
 #'
-#' @param dat Meta-analysis data. This should be a data frame with three columns, called "name", "est" and "se" giving the study name, study-specific parameter estimates and corresponding standard errors respectively.  If omitted, the app is launched with the default \code{\link{magnesium}} data.
+#' @param dat Meta-analysis data. This should be a data frame with three columns, called "name", "est" and "se" giving the study name, study-specific parameter estimates and corresponding standard errors respectively.
+#'
+#' If omitted, the app is launched with the default \code{\link{magnesium}} data.
+#'
+#' Numeric or character study names are permitted.  If the data frame has more than three columns, the first three are used.  If the first three columns are called "name", "est" and "se" in some order, they are re-ordered appropriately, otherwise they are re-named.
 #'
 #' @param rstudio The default of FALSE opens the app in the system default web browser.  If running RStudio and \code{rstudio=TRUE}, the app is opened in the RStudio built-in viewer.
 #'
 #' @return None
 #'
-#' @details Opens a web browser with the interactive application
+#' @details Opens a web browser with the interactive application.
 #'
+#' \code{MetaAnalyzer} is an alias for \code{MetaAnalyser}.
+#' 
 #' @examples
 #' \dontrun{MetaAnalyser(magnesium)}
 #'
@@ -18,7 +24,7 @@
 
 MetaAnalyser <- function(dat, rstudio=FALSE){
     if (!missing(dat)){
-        validate_data(dat)
+        dat <- validate_data(dat)
         .dat_env$userdata <- dat
         .dat_env$userdataname <- deparse(as.list(match.call())$dat)
     } else {
@@ -34,6 +40,9 @@ MetaAnalyser <- function(dat, rstudio=FALSE){
                   launch.browser = launch.browser)
 }
 
+#' @rdname MetaAnalyser
+MetaAnalyzer <- MetaAnalyser
+
 validate_data <- function(dat){
     if (!is.data.frame(dat)){
         if (is.matrix(dat))
@@ -42,7 +51,10 @@ validate_data <- function(dat){
     }
     if (ncol(dat) < 3)
         stop("\"dat\" should be a data frame with 3 columns, found ", ncol(dat), " columns")
-    names(dat)[1:3] <- c("name","est","se")
+    if (all(sort(names(dat)[1:3]) == c("est","name","se")))
+        dat <- dat[,c("name","est","se")]
+    else names(dat)[1:3] <- c("name","est","se")
     if (!is.numeric(dat$est)) stop("second column of \"dat\", giving estimate, should be numeric")
     if (!is.numeric(dat$se)) stop("third column of \"dat\", giving standard error, should be numeric")
+    dat
 }

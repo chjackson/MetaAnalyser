@@ -7,7 +7,9 @@
 metasumm(dat, resd, egger = FALSE)
 }
 \arguments{
-\item{dat}{Meta-analysis data. This should be a data frame with three columns, called "name", "est" and "se" giving the study name, study-specific parameter estimates and corresponding standard errors respectively.  If omitted, the app is launched with the default \code{\link{magnesium}} data.}
+\item{dat}{Meta-analysis data. This should be a data frame with three columns, called "name", "est" and "se" giving the study name, study-specific parameter estimates and corresponding standard errors respectively.
+
+If omitted, the app is launched with the default \code{\link{magnesium}} data.   Numeric or character study names are permitted.  If the data frame has more than three columns, the first three are used.  If the first three columns are called "name", "est" and "se" in some order, they are re-ordered appropriately, otherwise they are re-named.}
 
 \item{resd}{Random effects standard deviation.  Set \code{resd=0} for a fixed effects meta-analysis.  If \code{resd} is omitted, a random effects meta-analysis is performed using the typical DerSimonian and Laird method to obtain the standard deviation (\code{\link{resd_default}}).}
 

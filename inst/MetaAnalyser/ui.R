@@ -1,12 +1,16 @@
-userdataname <- if (exists("userdataname", envir = MetaAnalyser:::.dat_env))
-                    get("userdataname", envir = MetaAnalyser:::.dat_env) else "magnesium"
-
 datasets <- c("magnesium", "catheter", "aspirin", "symmetric")
 datasets.title <- c("Magnesium", "Catheter", "Aspirin", "Symmetric")
-owndata.idx <- length(datasets) + 1
+userdataname <- if (exists("userdataname", envir = MetaAnalyser:::.dat_env))
+                    get("userdataname", envir = MetaAnalyser:::.dat_env) else NULL
+is.userdata <- !is.null(userdataname) && (!userdataname %in% datasets)
+owndata.idx <- length(datasets) + 1 + is.userdata
 data.choices <- seq_len(owndata.idx)
-names(data.choices) <- c(datasets.title, "Upload your own...")
+names(data.choices) <- c(datasets.title, "Upload your own...",
+                         if (is.userdata) userdataname else NULL)
 data.default <- if (userdataname %in% datasets) match(userdataname, datasets) else 1
+if (is.userdata) data.default <- length(datasets) + 2
+
+## Fixme add user data to choice list if supplied 
 
 shinyUI(fluidPage(
     includeCSS('style.css'),
@@ -20,7 +24,7 @@ shinyUI(fluidPage(
         selectInput("select", label = h4("Choose a dataset or upload your own"),
                     choices = data.choices, selected = data.default),
         conditionalPanel(
-            condition = sprintf("input.select == %s", owndata.idx),
+            condition = sprintf("input.select == %s", length(datasets)+1),
             fileInput('data',
                       'Choose CSV file to upload. Needs exactly three columns giving study name, estimate and standard error in that order.',
                       accept = c(

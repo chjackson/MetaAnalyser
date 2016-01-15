@@ -28,40 +28,40 @@ shinyServer(function(input, output, session) {
     ## Return the full dataset currently chosen
     getdata_base <- reactive({
         globals$newdata <<- NULL # note global assignment <<-
-        dat <- NULL
-        if (exists("userdata", envir = MetaAnalyser:::.dat_env))
-            dat <- get("userdata", envir = MetaAnalyser:::.dat_env)
-        ## TODO validate input data.
-        if (is.null(dat)){
-            dat <- switch(input$select,
-                          "1"=magnesium,
-                          "2"=catheter,
-                          "3"=aspirin,
-                          "4"=symmetric,
-                          "5"={ ## user-uploaded dataset
-                output$filechoiceui <- renderUI({ list(
-                                                      checkboxInput('header', 'Header', TRUE),
-                                                      radioButtons('sep', 'Separator',
-                                                                   c(Comma=',', Semicolon=';', Tab='\t'),
-                                                                   selected=',', inline=TRUE
-                                                                   ),
-                                                      radioButtons('quote', 'Quote',
-                                                                   c(None='', 'Double Quote'='"', 'Single Quote'="'"),
-                                                                   selected='"', inline=TRUE)
-                                                  ) })
-                inFile <- input$data
-                validate( need(inFile != "", "Please select a dataset") ) ## needed to avoid function returning before data chosen
-                if (is.null(inFile)) userdata <- NULL
-                else userdata <- read.csv(inFile$datapath, header = input$header,
-                                          sep = input$sep, quote = input$quote)
-                ## Silence if error occurs - but maybe that's OK - can switch to another data set.
-                validate(need(ncol(userdata)>=3, "Need at least 3 columns in the data"))
-                names(userdata)[1:3] <- c("name","est","se")
-                validate(need(is.numeric(userdata$est), "Second column (estimate) should be numeric"))
-                validate(need(is.numeric(userdata$se), "Second column (SE) should be numeric"))
-                userdata
-            })
+        dat <- switch(input$select,
+                      "1"=magnesium,
+                      "2"=catheter,
+                      "3"=aspirin,
+                      "4"=symmetric,
+                      "5"={ ## user-uploaded dataset
+            output$filechoiceui <- renderUI({ list(
+                                                  checkboxInput('header', 'Header', TRUE),
+                                                  radioButtons('sep', 'Separator',
+                                                               c(Comma=',', Semicolon=';', Tab='\t'),
+                                                               selected=',', inline=TRUE
+                                                               ),
+                                                  radioButtons('quote', 'Quote',
+                                                               c(None='', 'Double Quote'='"', 'Single Quote'="'"),
+                                                               selected='"', inline=TRUE)
+                                              ) })
+            inFile <- input$data
+            validate( need(inFile != "", "Please select a dataset") ) ## needed to avoid function returning before data chosen
+            if (is.null(inFile)) userdata <- NULL
+            else userdata <- read.csv(inFile$datapath, header = input$header,
+                                      sep = input$sep, quote = input$quote)
+            ## Silence if error occurs - but maybe that's OK - can switch to another data set.
+            validate(need(ncol(userdata)>=3, "Need at least 3 columns in the data"))
+            names(userdata)[1:3] <- c("name","est","se")
+            validate(need(is.numeric(userdata$est), "Second column (estimate) should be numeric"))
+            validate(need(is.numeric(userdata$se), "Second column (SE) should be numeric"))
+            userdata
+        },
+        "6" = {
+            if (exists("userdata", envir = MetaAnalyser:::.dat_env))
+                get("userdata", envir = MetaAnalyser:::.dat_env) else NULL
         }
+        )
+        
         dat
     })
 
