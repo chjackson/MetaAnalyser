@@ -3,7 +3,7 @@
 export(MetaAnalyser)
 export(MetaAnalyzer)
 export(metasumm)
-export(resd_default)
+export(resd_dsl)
 
 importFrom(DT, renderDataTable)
 importFrom(DT, dataTableProxy)

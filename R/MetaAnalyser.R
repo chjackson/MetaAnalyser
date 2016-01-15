@@ -4,8 +4,6 @@
 #'
 #' @param dat Meta-analysis data. This should be a data frame with three columns, called "name", "est" and "se" giving the study name, study-specific parameter estimates and corresponding standard errors respectively.
 #'
-#' If omitted, the app is launched with the default \code{\link{magnesium}} data.
-#'
 #' Numeric or character study names are permitted.  If the data frame has more than three columns, the first three are used.  If the first three columns are called "name", "est" and "se" in some order, they are re-ordered appropriately, otherwise they are re-named.
 #'
 #' @param rstudio The default of FALSE opens the app in the system default web browser.  If running RStudio and \code{rstudio=TRUE}, the app is opened in the RStudio built-in viewer.
@@ -13,6 +11,8 @@
 #' @return None
 #'
 #' @details Opens a web browser with the interactive application.
+#'
+#' If \code{dat} is omitted, the default \code{\link{magnesium}} dataset is used.
 #'
 #' \code{MetaAnalyzer} is an alias for \code{MetaAnalyser}.
 #' 

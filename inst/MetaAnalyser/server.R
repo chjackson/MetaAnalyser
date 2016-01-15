@@ -1,5 +1,7 @@
 ### Main Shiny server function
 
+resd_default <- resd_dsl
+
 shinyServer(function(input, output, session) {
 
     values <- reactiveValues(selected=TRUE,  ## Current data subset selection

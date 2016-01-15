@@ -10,7 +10,8 @@
 #' resd_default(magnesium)
 #'
 
-resd_default <- function(dat){
+resd_dsl <- function(dat){
+    dat <- validate_data(dat)
     with(dat, {
         wtfe <- 1 / se^2
         a.fixef <- sum(wtfe*est/sum(wtfe))
