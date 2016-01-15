@@ -8,6 +8,6 @@ Maintainer: Christopher Jackson <chris.jackson@mrc-bsu.cam.ac.uk>
 Description: An interactive application to visualise meta-analysis data as a physical weighing machine.  The interface is based on the Shiny web application framework, though can be run locally and with the user's own data.
 License: GPL (>= 2)
 Depends: R (>= 2.10), shiny
-Imports: ggvis,DT
+Imports: ggvis,DT (>=0.1.40)
 Suggests: rmeta
 LazyData: yes
