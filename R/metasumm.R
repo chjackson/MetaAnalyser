@@ -7,7 +7,7 @@
 #' @return Estimated random effects standard deviation
 #'
 #' @examples
-#' resd_default(magnesium)
+#' resd_dsl(magnesium)
 #'
 
 resd_dsl <- function(dat){
@@ -29,7 +29,7 @@ resd_dsl <- function(dat){
 #'
 #' @inheritParams MetaAnalyser
 #'
-#' @param resd Random effects standard deviation.  Set \code{resd=0} for a fixed effects meta-analysis.  If \code{resd} is omitted, a random effects meta-analysis is performed using the typical DerSimonian and Laird method to obtain the standard deviation (\code{\link{resd_default}}).
+#' @param resd Random effects standard deviation.  Set \code{resd=0} for a fixed effects meta-analysis.  If \code{resd} is omitted, a random effects meta-analysis is performed using the typical DerSimonian and Laird method to obtain the standard deviation (\code{\link{resd_dsl}}).
 #'
 #' @param egger Set to \code{TRUE} to perform Egger correction.
 #'
@@ -51,7 +51,7 @@ resd_dsl <- function(dat){
 metasumm <- function(dat, resd, egger=FALSE){
     est <- dat$est
     se <- dat$se
-    if (missing(resd)) resd <- resd_default(dat)
+    if (missing(resd)) resd <- resd_dsl(dat)
     wtfe <- 1 / se^2
     poolfix <- sum(wtfe * est / sum(wtfe))
     tausq <- resd^2
