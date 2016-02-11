@@ -14,4 +14,4 @@ library(MetaAnalyser)
 MetaAnalyser()
 ```
 
-MetaAnalyser is not yet on CRAN as it depends on the development version of DT.
+MetaAnalyser is not yet on CRAN, as it depends on the development version of DT.

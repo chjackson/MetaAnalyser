@@ -5,7 +5,7 @@ citEntry(entry = "Article",
   author       = personList(as.person("J. Bowden"), as.person("C. Jackson")),
   journal      = "The American Statistician",
   year         = "2016",
-  volume       = "",
+  volume       = "(accepted for publication)",
   number       = "",
   pages        = "",
   url          = "",
@@ -14,5 +14,5 @@ citEntry(entry = "Article",
   paste("J. Bowden, C. Jackson",
         "Weighing evidence with the Meta-Analyzer",
         "The American Statistician",
-        "URL")
+        "(accepted for publication)")
 )

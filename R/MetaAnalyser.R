@@ -19,7 +19,7 @@
 #' @examples
 #' \dontrun{MetaAnalyser(magnesium)}
 #'
-#' @references J. Bowden and C. Jackson "Weighing evidence with the Meta-Analyser"
+#' @references J. Bowden and C. Jackson "Weighing evidence with the Meta-Analyser" The American Statistician (accepted for publication, 2016)
 #'
 
 MetaAnalyser <- function(dat, rstudio=FALSE){

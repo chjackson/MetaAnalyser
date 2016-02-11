@@ -18,6 +18,6 @@ Estimated random effects standard deviation
 Random effects standard deviation using the classic DerSimonian & Laird formula.
 }
 \examples{
-resd_default(magnesium)
+resd_dsl(magnesium)
 }
 

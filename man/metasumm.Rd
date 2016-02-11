@@ -11,7 +11,7 @@ metasumm(dat, resd, egger = FALSE)
 
 Numeric or character study names are permitted.  If the data frame has more than three columns, the first three are used.  If the first three columns are called "name", "est" and "se" in some order, they are re-ordered appropriately, otherwise they are re-named.}
 
-\item{resd}{Random effects standard deviation.  Set \code{resd=0} for a fixed effects meta-analysis.  If \code{resd} is omitted, a random effects meta-analysis is performed using the typical DerSimonian and Laird method to obtain the standard deviation (\code{\link{resd_default}}).}
+\item{resd}{Random effects standard deviation.  Set \code{resd=0} for a fixed effects meta-analysis.  If \code{resd} is omitted, a random effects meta-analysis is performed using the typical DerSimonian and Laird method to obtain the standard deviation (\code{\link{resd_dsl}}).}
 
 \item{egger}{Set to \code{TRUE} to perform Egger correction.}
 }
