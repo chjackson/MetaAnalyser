@@ -5,14 +5,15 @@ citEntry(entry = "Article",
   author       = personList(as.person("J. Bowden"), as.person("C. Jackson")),
   journal      = "The American Statistician",
   year         = "2016",
-  volume       = "(accepted for publication)",
+  volume       = "Available online",
   number       = "",
   pages        = "",
-  url          = "",
+  url          = "http://dx.doi.org/10.1080/00031305.2016.1165735",
 
   textVersion  =
   paste("J. Bowden, C. Jackson",
-        "Weighing evidence with the Meta-Analyzer",
+        "Weighing evidence with the Meta-Analyzer.",
         "The American Statistician",
-        "(accepted for publication)")
+        "(2016)",
+        "Available online: http://dx.doi.org/10.1080/00031305.2016.1165735")
 )

@@ -33,7 +33,7 @@ MetaAnalyser <- function(dat, rstudio=FALSE){
     }
     on.exit(.dat_env$userdata <- .dat_env$userdataname <- NULL, add = TRUE)
 
-    launch.browser <- if (!rstudio) TRUE else rstudio::viewer
+    launch.browser <- if (!rstudio) TRUE else rstudioapi::viewer
     ## R code for shiny app is in inst/MetaAnalyser in source package,
     ## or in MetaAnalyser in binary package
     shiny::runApp(system.file("MetaAnalyser", package = "MetaAnalyser"),
