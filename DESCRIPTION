@@ -10,4 +10,6 @@ License: GPL (>= 2)
 Depends: R (>= 2.10), shiny
 Imports: ggvis, DT (>= 0.1.40), rstudioapi
 Suggests: rmeta
+URL: https://github.com/chjackson/MetaAnalyser
+BugReports: https://github.com/chjackson/MetaAnalyser/issues
 LazyData: yes

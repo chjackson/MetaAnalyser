@@ -19,8 +19,14 @@
 #' @examples
 #' \dontrun{MetaAnalyser(magnesium)}
 #'
-#' @references J. Bowden and C. Jackson "Weighing evidence with the Meta-Analyser" The American Statistician (accepted for publication, 2016)
+#' @references J. Bowden and C. Jackson "Weighing evidence with the Meta-Analyser" The American Statistician (2016) Available online, \url{http://dx.doi.org/10.1080/00031305.2016.1165735}
 #'
+#' @export MetaAnalyser
+#' @export MetaAnalyzer
+#' @importFrom DT renderDataTable dataTableProxy dataTableOutput
+#' @importFrom shiny runApp
+#' @import ggvis
+#' 
 
 MetaAnalyser <- function(dat, rstudio=FALSE){
     if (!missing(dat)){

@@ -47,6 +47,9 @@ resd_dsl <- function(dat){
 #'
 #' \item{pwtre}{Weights for desired random effects standard deviation, normalised to sum to 1}
 #'
+#' @export metasumm
+#' @export resd_dsl
+#' @importFrom stats lm qnorm qt
 
 metasumm <- function(dat, resd, egger=FALSE){
     est <- dat$est

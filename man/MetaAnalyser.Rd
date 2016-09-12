@@ -33,7 +33,6 @@ If \code{dat} is omitted, the default \code{\link{magnesium}} dataset is used.
 \dontrun{MetaAnalyser(magnesium)}
 }
 \references{
-J. Bowden and C. Jackson "Weighing evidence with the Meta-Analyser" The
-American Statistician (2016) Available online, \url{http://dx.doi.org/10.1080/00031305.2016.1165735}
+J. Bowden and C. Jackson "Weighing evidence with the Meta-Analyser" The American Statistician (2016) Available online, \url{http://dx.doi.org/10.1080/00031305.2016.1165735}
 }
 

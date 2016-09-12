@@ -297,7 +297,7 @@ shinyServer(function(input, output, session) {
         } else {
             dat <- getdata_static()
             yex <- 0.1
-            ymax <- max(dat$wtfe)*(1 + yex)
+            ymax <- signif(max(dat$wtfe)*(1 + yex), 3)
             ymin <- 0
             lab <- "y-axis range (inverse variance)"
         }
