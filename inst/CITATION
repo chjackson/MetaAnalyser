@@ -1,4 +1,4 @@
-citHeader("To cite msm in publications use:")
+citHeader("To cite MetaAnalyser in publications use:")
 
 citEntry(entry = "Article",
   title        = "Weighing evidence with the Meta-Analyzer",

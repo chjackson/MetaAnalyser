@@ -1,15 +1,26 @@
 Package: MetaAnalyser
 Type: Package
-Title: An Interactive Visualisation of Meta-Analysis as a Physical Weighing Machine	
-Version: 0.2
-Date: 2016-08-10
-Author: Jack Bowden <j.bowden@bristol.ac.uk> (conception), Christopher Jackson <chris.jackson@mrc-bsu.cam.ac.uk> (programming)
+Title: An Interactive Visualisation of Meta-Analysis as a Physical Weighing
+    Machine
+Version: 0.2.1
+Date: 2016-10-12
+Author: Jack Bowden <j.bowden@bristol.ac.uk> (conception), Christopher Jackson
+    <chris.jackson@mrc-bsu.cam.ac.uk> (programming)
 Maintainer: Christopher Jackson <chris.jackson@mrc-bsu.cam.ac.uk>
-Description: An interactive application to visualise meta-analysis data as a physical weighing machine.  The interface is based on the Shiny web application framework, though can be run locally and with the user's own data.
+Description: An interactive application to visualise meta-analysis data as a
+    physical weighing machine. The interface is based on the Shiny web application
+    framework, though can be run locally and with the user's own data.
 License: GPL (>= 2)
-Depends: R (>= 2.10), shiny
-Imports: ggvis, DT (>= 0.1.40), rstudioapi
-Suggests: rmeta
+Depends:
+    R (>= 2.10),
+    shiny
+Imports:
+    ggvis,
+    DT (>= 0.1.40),
+    rstudioapi
+Suggests:
+    rmeta
 URL: https://github.com/chjackson/MetaAnalyser
 BugReports: https://github.com/chjackson/MetaAnalyser/issues
 LazyData: yes
+RoxygenNote: 5.0.1
